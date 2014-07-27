@@ -13,8 +13,7 @@ class Controller {
 
 		function __construct() {
 		//CONNECT TO DB
-			// $this->link = new mysqli("localhost", "profimed_adi", "Start1312", "profimed_adi");
-			$this->link = new mysqli("localhost", "root", "usbw", "test1");
+			$this->link = new mysqli("localhost", "root", "usbw", "[[DatabaseName]]");
 			if ($this->link->connect_errno) {
 			    echo "Failed to connect to MySQL: (" . $this->link->connect_errno . ") " . $this->link->connect_error;
 			}

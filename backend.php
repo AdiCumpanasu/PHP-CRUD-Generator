@@ -13,7 +13,7 @@ class Controller {
 
 		function __construct() {
 		//CONNECT TO DB
-			$this->link = new mysqli("localhost", "root", "usbw", "test1");
+			$this->link = new mysqli("localhost", "root", "usbw");
 			if ($this->link->connect_errno) {
 			    echo "Failed to connect to MySQL: (" . $this->link->connect_errno . ") " . $this->link->connect_error;
 			}
@@ -58,16 +58,16 @@ class Controller {
 		return $columns;
 	}
 
-	function copyFiles($tableName) {
+	function copyFiles($databaseName, $tableName) {
 		$RestBackendTemplate = file_get_contents('RestBackendTemplate.php');
 		$RestFrontendTemplate = file_get_contents('RestFrontendTemplate.html');
 
-		$arr = array("[[TableName]]" => $tableName, "\n\r" => "\n");
+		$arr = array("[[TableName]]" => $tableName, "[[DatabaseName]]" => $databaseName, "\n\r" => "\n");
 
 		$RestBackendTemplate = strtr($RestBackendTemplate , $arr);
 		$RestFrontendTemplate = strtr($RestFrontendTemplate , $arr);
 
-		$columnNames = $this->get_columns($tableName);
+		$columnNames = $this->get_columns($databaseName, $tableName);
 
 //FRONTEND
 		$RestFrontendTemplateExploded = explode( "\n", $RestFrontendTemplate);
