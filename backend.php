@@ -13,16 +13,26 @@ class Controller {
 
 		function __construct() {
 		//CONNECT TO DB
-			// $this->link = new mysqli("localhost", "profimed_adi", "Start1312", "profimed_adi");
 			$this->link = new mysqli("localhost", "root", "usbw", "test1");
 			if ($this->link->connect_errno) {
 			    echo "Failed to connect to MySQL: (" . $this->link->connect_errno . ") " . $this->link->connect_error;
 			}
 		}
 
+	function get_databases()
+	{
+	    $tables = array();
+	    $sql = "SHOW DATABASES";
+	    $result = mysqli_query($this->link, $sql);
+	    if($result)
+	    while($table = mysqli_fetch_row($result))
+	    {
+	        $tables[] = $table[0];
+	    }
+	    echo json_encode($tables);
+	}
 
-
-	function mysql_tables($database='')
+	function get_tables($database='')
 	{
 	    $tables = array();
 	    $sql = "SHOW TABLES FROM {$database};";
@@ -35,9 +45,10 @@ class Controller {
 	    echo json_encode($tables);
 	}
 
-	function get_columns($tableName)
+	function get_columns($databaseName, $tableName)
 	{
-		$columns = array();
+		mysqli_select_db($this->link, $databaseName);
+	    $columns = array();
 		$sql = "DESCRIBE `" . $tableName;
 		$result = mysqli_query($this->link, $sql);
 		while($row = mysqli_fetch_array($result))
@@ -113,11 +124,14 @@ $controller = new Controller();
 if ( isset($_GET['action']) ) {
 
 	switch($_GET['action']){
-		case "listtables":
-			$controller->mysql_tables($requestObject->database);
+		case "listTables":
+			$controller->get_tables($requestObject->database);
+			break;
+		case "listDatabases":
+			$controller->get_databases();
 			break;
 		case "generate":
-			$controller->copyFiles($requestObject->table);
+			$controller->copyFiles($requestObject->database, $requestObject->table);
 			break;
 		default:
 			break;

@@ -7,6 +7,9 @@
 </head>
 <body>
 
+Database <select name="databases" id="databases">
+
+</select> Table 
 <select name="tables" id="tables">
 	<option>Select a table</option>
 </select>
@@ -28,8 +31,10 @@ function makePostCall(url, data) {
 
 <script>
 
-$(function(){
-		makePostCall("backend.php?action=listtables", {"database" : "test1"}).success(function(datareceived){
+function fillTablesOptions(databaseName)
+{
+	var ajaxCall = makePostCall("backend.php?action=listTables", {"database" : databaseName}).success(function(datareceived){
+		$('#tables').empty();
 		if (datareceived) {
 			for (var table in datareceived) {
 				var  option = $("<option>" + datareceived[table] + "</option>");
@@ -45,25 +50,40 @@ $(function(){
 	}).fail(function(sender, message, details){
 		alert(message);
 	});
+}
 
-	$('#generate').on("click" , function() {
-		var selected = $('#tables').val();
-		makePostCall("backend.php?action=generate", {"table" : selected}).success(function(datareceived){
+$(function(){
+	var ajaxCall = makePostCall("backend.php?action=listDatabases", {}).success(function(datareceived){
 		if (datareceived) {
-
-				window.location.href = "RestFrontend" + datareceived.table + ".html";
+			for (var table in datareceived) {
+				var  option = $("<option>" + datareceived[table] + "</option>");
+				$('#databases').append(option);
+			}
 		}
 		else
 		{
-			alert("error generating or listing from db");
+			alert("no tables in this database or error");
 		}
-
-
 	}).fail(function(sender, message, details){
 		alert(message);
 	});
-	})
+	
+	$('#databases').on("change", function (event, ui) { 
+		fillTablesOptions($('#databases').val()); 
+	});
+	
+	fillTablesOptions("test1");
 
+	$('#generate').on("click" , function() {
+		var selectedTable = $('#tables').val();
+		var selectedDatabase = $('#databases').val();
+		var ajaxCall = makePostCall("backend.php?action=generate", {"database" : selectedDatabase, "table" : selectedTable}).success(function(datareceived){
+			window.location.href = "RestFrontend"+selectedTable+".html";
+		}).fail(function(sender, message, details){
+			alert(message);
+		});
+	
+	})
 });
 
 </script>
