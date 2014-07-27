@@ -1,0 +1,74 @@
+<html>
+<head>
+<script type="text/javascript">
+   // document.write("\<script src='//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js' type='text/javascript'>\<\/script>");
+</script>
+<script type="text/javascript" src="jQuery-9.js"></script>
+</head>
+<body>
+
+<select name="tables" id="tables">
+	<option>Select a table</option>
+</select>
+<button name="generate" id="generate">Generate</button>
+
+<script>
+function makePostCall(url, data) {
+       var json_data = data;//JSON.stringify(data);
+
+        return $.ajax({
+            type: "POST",
+            url: url,
+            data: json_data,
+            dataType: "json",
+            //contentType: "application/json;charset=utf-8"
+        });
+    }
+</script>
+
+<script>
+
+$(function(){
+		makePostCall("backend.php?action=listtables", {"database" : "test1"}).success(function(datareceived){
+		if (datareceived) {
+			for (var table in datareceived) {
+				var  option = $("<option>" + datareceived[table] + "</option>");
+				$('#tables').append(option);
+			}
+		}
+		else
+		{
+			alert("no tables in this database or error");
+		}
+
+
+	}).fail(function(sender, message, details){
+		alert(message);
+	});
+
+	$('#generate').on("click" , function() {
+		var selected = $('#tables').val();
+		makePostCall("backend.php?action=generate", {"table" : selected}).success(function(datareceived){
+		if (datareceived) {
+
+				window.location.href = "RestFrontend" + datareceived.table + ".html";
+		}
+		else
+		{
+			alert("error generating or listing from db");
+		}
+
+
+	}).fail(function(sender, message, details){
+		alert(message);
+	});
+	})
+
+});
+
+</script>
+
+
+
+</body>
+</html>

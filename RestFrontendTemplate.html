@@ -1,0 +1,147 @@
+<html>
+<head>
+<script type="text/javascript" src="jQuery-9.js"></script>
+</head>
+
+<body>
+<h1>Table: [[TableName]]</h1>
+<table id="userstable">
+<tr>
+<th>[[ColumnName]]</th>
+</tr>
+
+</table>
+
+
+<div id="formular">
+	<label for="[[ColumnName]]">[[ColumnName]]: </label><input type="text" name="[[ColumnName]]" id="[[ColumnName]]">
+	<input type="hidden" value="-1" name="update" id="saveid"><!-- create -1 or update id -->
+	<button name="save" id="save">Save</button>
+</div>
+
+
+
+
+<script>
+// var apiRoot = "http://profimedica.com/modules/Mobile/api.php";
+var apiRoot = "RestBackend[[TableName]].php";
+
+function makePostCall(url, data) {
+       var json_data = data;//JSON.stringify(data);
+
+        return $.ajax({
+            type: "POST",
+            url: url,
+            data: json_data,
+            dataType: "json",
+            //contentType: "application/json;charset=utf-8"
+        });
+    }
+
+
+var mytable = $('#userstable');
+
+function Edit(itemObJ) {
+	$('#saveid').val(itemObJ.id);
+	$('#[[ColumnName]]').val(itemObJ.[[ColumnName]]);
+
+}
+
+function Delete(data) {
+	   	var makePostCallme = makePostCall(apiRoot+"?action=delete", data).success(function(datareceived){
+	   		if(datareceived.id >= 0 ) {
+					$('tr#item'+ datareceived.id).hide();
+				}
+	   }).fail(function(datareceived, message, details){
+	   	alert(message);
+	   });
+	}
+
+function addVisualItem(itemObJ) {
+	var myRule = $('<tr id="item' + itemObJ.id + '">');
+	mytable.append(myRule);
+	var tdid = $('<td>').html(itemObJ.id);
+	var td[[ColumnName]] = $('<td>').html(itemObJ.[[ColumnName]]);
+
+	var editButton =$('<button>Edit</button>');
+	var deleteButton =$('<button style="background: yellow;">Delete</button>');
+	myRule.append(td[[ColumnName]]);
+	myRule.append(editButton).append(deleteButton);
+	editButton.click(function() {
+		Edit(itemObJ);
+		});
+	deleteButton.click(function() {
+		Delete(itemObJ);
+		});
+}
+</script>
+
+
+
+
+<script>
+		// LOAD LIST
+
+	   function Get(){
+
+	   		var data = "{}";
+
+	   		var makePostCallme = makePostCall(apiRoot+"?action=get", data).success(function(datareceived){
+
+	   			for (var key in datareceived.result) {
+	   				user = datareceived.result[key];
+						addVisualItem(user);
+				    }
+
+	   		}).fail(function(datareceived, message, details){
+	   				alert(message);
+	   		});
+	   }
+
+	   Get();
+</script>
+
+
+
+<script>
+		// SAVE OR UPDATE
+	   document.getElementById("save").onclick = function(){ Save(); };
+
+	   function Save(){
+	   		var [[ColumnName]] = document.getElementById('[[ColumnName]]').value;
+	   		var data = {};
+	   		data.id = $('#saveid').val();
+	   		data.[[ColumnName]] = [[ColumnName]];
+
+	   		var makePostCallme = null;
+
+				if(data.id >= 0) {
+					// Update
+					makePostCallme = makePostCall(apiRoot+"?action=update", data).success(function(datareceived){
+					   				if(datareceived.id >= 0 ) {
+					   					$('tr#item'+ datareceived.id + ' td:nth-child(2)').html(datareceived.name);
+					   					var temp = 'tr#item'+ datareceived.id + ' td:nth-child(3)';
+					   					$(temp).html(datareceived.[[ColumnName]]);
+					   				}
+					   		}).fail(function(datareceived, message, details){
+					   				alert(message);
+					   		});
+				}
+				else
+				{
+					// Save
+					makePostCallme = makePostCall(apiRoot+"?action=save", data).success(function(datareceived){
+					   				if(datareceived.id >= 0 ) {
+					   					addVisualItem(datareceived);
+					   				}
+					   		}).fail(function(datareceived, message, details){
+					   				alert(message);
+					   		});
+				}
+
+	   }
+
+
+</script>
+</body>
+</html>
